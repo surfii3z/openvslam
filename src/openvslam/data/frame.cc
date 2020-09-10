@@ -17,6 +17,7 @@ namespace data {
 
 std::atomic<unsigned int> frame::next_id_{0};
 
+// MONO
 frame::frame(const cv::Mat& img_gray, const double timestamp,
              feature::orb_extractor* extractor, bow_vocabulary* bow_vocab,
              camera::base* camera, const float depth_thr,
@@ -51,6 +52,8 @@ frame::frame(const cv::Mat& img_gray, const double timestamp,
     assign_keypoints_to_grid(camera_, undist_keypts_, keypt_indices_in_cells_);
 }
 
+
+// STEREO
 frame::frame(const cv::Mat& left_img_gray, const cv::Mat& right_img_gray, const double timestamp,
              feature::orb_extractor* extractor_left, feature::orb_extractor* extractor_right,
              bow_vocabulary* bow_vocab, camera::base* camera, const float depth_thr,
@@ -74,7 +77,7 @@ frame::frame(const cv::Mat& left_img_gray, const cv::Mat& right_img_gray, const 
     camera_->undistort_keypoints(keypts_, undist_keypts_);
 
     // Estimate depth with stereo match
-    match::stereo stereo_matcher(extractor_left->image_pyramid_, extractor_right_->image_pyramid_,
+    match::stereo stereo_matcher(extractor_left->mvImagePyramid, extractor_right_->mvImagePyramid,
                                  keypts_, keypts_right_, descriptors_, descriptors_right_,
                                  scale_factors_, inv_scale_factors_,
                                  camera->focal_x_baseline_, camera_->true_baseline_);
@@ -91,6 +94,8 @@ frame::frame(const cv::Mat& left_img_gray, const cv::Mat& right_img_gray, const 
     assign_keypoints_to_grid(camera_, undist_keypts_, keypt_indices_in_cells_);
 }
 
+
+// RGBD
 frame::frame(const cv::Mat& img_gray, const cv::Mat& img_depth, const double timestamp,
              feature::orb_extractor* extractor, bow_vocabulary* bow_vocab,
              camera::base* camera, const float depth_thr,

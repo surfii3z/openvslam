@@ -14,6 +14,18 @@ target_sources(${PROJECT_NAME}
                ${CMAKE_CURRENT_SOURCE_DIR}/pnp_solver.cc
                ${CMAKE_CURRENT_SOURCE_DIR}/sim3_solver.cc)
 
+# cuda_include_directories(
+# ${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc
+# )
+        
+# cuda_add_library(${PROJECT_NAME} SHARED
+# ${CMAKE_CURRENT_SOURCE_DIR}/common.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/homography_solver.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/fundamental_solver.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/essential_solver.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/pnp_solver.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/sim3_solver.cc)
+
 # Install headers
 file(GLOB HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(FILES ${HEADERS}

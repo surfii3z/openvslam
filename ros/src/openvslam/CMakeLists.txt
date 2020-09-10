@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
-project(openvslam LANGUAGES CXX C)
+cmake_minimum_required(VERSION 3.8)
+project(openvslam LANGUAGES CXX C CUDA)
 
 if(POLICY CMP0042)
     cmake_policy(SET CMP0042 NEW)

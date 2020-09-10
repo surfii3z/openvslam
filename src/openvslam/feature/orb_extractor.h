@@ -7,6 +7,11 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudafilters.hpp>
+#include "openvslam/cuda/Fast.hpp"
+#include "openvslam/cuda/Orb.hpp"
+
 namespace openvslam {
 namespace feature {
 
@@ -72,7 +77,12 @@ public:
     std::vector<float> get_inv_level_sigma_sq() const;
 
     //! Image pyramid
-    std::vector<cv::Mat> image_pyramid_;
+    // std::vector<cv::Mat> image_pyramid_;
+
+    // Assumption: all frames are of the same dimension
+    bool mvImagePyramidAllocatedFlag;
+    std::vector<cv::cuda::GpuMat>  mvImagePyramid;
+    std::vector<cv::cuda::GpuMat>  mvImagePyramidBorder;
 
 private:
     //! Initialize orb extractor
@@ -88,12 +98,16 @@ private:
     void compute_image_pyramid(const cv::Mat& image);
 
     //! Compute fast keypoints for cells in each image pyramid
-    void compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>>& all_keypts, const cv::Mat& mask) const;
+    void compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>>& all_keypts, const cv::Mat& mask);
 
     //! Pick computed keypoints on the image uniformly
     std::vector<cv::KeyPoint> distribute_keypoints_via_tree(const std::vector<cv::KeyPoint>& keypts_to_distribute,
                                                             const int min_x, const int max_x, const int min_y, const int max_y,
                                                             const unsigned int num_keypts) const;
+    
+    std::vector<cv::Point> pattern;
+    cv::Ptr<cv::cuda::Filter> mpGaussianFilter;
+    cuda::Stream mcvStream;
 
     //! Initialize nodes that used for keypoint distribution tree
     std::list<orb_extractor_node> initialize_nodes(const std::vector<cv::KeyPoint>& keypts_to_distribute,
@@ -147,6 +161,10 @@ private:
     std::vector<unsigned int> num_keypts_per_level_;
     //! Index limitation that used for calculating of keypoint orientation
     std::vector<int> u_max_;
+
+    cuda::GpuFast gpuFast;
+    cuda::IC_Angle ic_angle_cuda;
+    cuda::GpuOrb gpuOrb;
 };
 
 } // namespace feature

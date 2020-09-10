@@ -2,6 +2,7 @@
 #define OPENVSLAM_MATCH_STEREO_H
 
 #include "openvslam/match/base.h"
+#include <opencv2/core/cuda.hpp>
 
 namespace openvslam {
 
@@ -15,7 +16,7 @@ class stereo {
 public:
     stereo() = delete;
 
-    stereo(const std::vector<cv::Mat>& left_image_pyramid, const std::vector<cv::Mat>& right_image_pyramid,
+    stereo(const std::vector<cv::cuda::GpuMat>& left_image_pyramid, const std::vector<cv::cuda::GpuMat>& right_image_pyramid,
            const std::vector<cv::KeyPoint>& keypts_left, const std::vector<cv::KeyPoint>& keypts_right,
            const cv::Mat& descs_left, const cv::Mat& descs_right,
            const std::vector<float>& scale_factors, const std::vector<float>& inv_scale_factors,
@@ -64,9 +65,9 @@ private:
                                     float& best_x_right, float& best_disp, float& best_correlation) const;
 
     //! reference to left image pyramid
-    const std::vector<cv::Mat>& left_image_pyramid_;
+    const std::vector<cv::cuda::GpuMat>& left_image_pyramid_;
     //! reference to right image pyramid
-    const std::vector<cv::Mat>& right_image_pyramid_;
+    const std::vector<cv::cuda::GpuMat>& right_image_pyramid_;
 
     //! number of keypoints
     const unsigned int num_keypts_;

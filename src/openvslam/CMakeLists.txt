@@ -50,7 +50,8 @@ add_library(${PROJECT_NAME}
             ${CMAKE_CURRENT_SOURCE_DIR}/system.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/tracking_module.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/mapping_module.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/global_optimization_module.cc)
+            ${CMAKE_CURRENT_SOURCE_DIR}/global_optimization_module.cc
+            )
 
 # Set output directory of the library
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -146,7 +147,18 @@ target_link_libraries(${PROJECT_NAME}
                       ${SUITESPARSE_LIBRARIES}
                       ${BoW_LIBRARY}
                       PRIVATE
-                      ${LAPACK_LIBRARIES})
+                      ${LAPACK_LIBRARIES}
+                      opencv_cudabgsegm
+                      opencv_cudaobjdetect
+                      opencv_cudastereo
+                      opencv_cudafeatures2d
+                      opencv_cudacodec
+                      opencv_cudaoptflow
+                      opencv_cudalegacy
+                      opencv_cudawarping
+                      opencv_cudaimgproc
+                      opencv_cudafilters
+                      )
 
 # ----- Install configuration -----
 

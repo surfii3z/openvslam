@@ -3,7 +3,7 @@
 namespace openvslam {
 namespace match {
 
-stereo::stereo(const std::vector<cv::Mat>& left_image_pyramid, const std::vector<cv::Mat>& right_image_pyramid,
+stereo::stereo(const std::vector<cv::cuda::GpuMat>& left_image_pyramid, const std::vector<cv::cuda::GpuMat>& right_image_pyramid,
                const std::vector<cv::KeyPoint>& keypts_left, const std::vector<cv::KeyPoint>& keypts_right,
                const cv::Mat& descs_left, const cv::Mat& descs_right,
                const std::vector<float>& scale_factors, const std::vector<float>& inv_scale_factors,
@@ -188,6 +188,7 @@ bool stereo::compute_subpixel_disparity(const cv::KeyPoint& keypt_left, const cv
 
     // パッチの移動範囲を計算し，範囲外であれば破棄
     constexpr int win_size = 5;
+    
     constexpr int slide_width = 5;
     const int ini_x = scaled_x_right - slide_width - win_size;
     const int end_x = scaled_x_right + slide_width + win_size;
@@ -204,16 +205,18 @@ bool stereo::compute_subpixel_disparity(const cv::KeyPoint& keypt_left, const cv
     auto patch_left = left_image_pyramid_.at(keypt_left.octave)
                           .rowRange(scaled_y_left - win_size, scaled_y_left + win_size + 1)
                           .colRange(scaled_x_left - win_size, scaled_x_left + win_size + 1);
-    patch_left.convertTo(patch_left, CV_32F);
-    patch_left -= patch_left.at<float>(win_size, win_size) * cv::Mat::ones(patch_left.rows, patch_left.cols, CV_32F);
+    cv::Mat IL(patch_left.rows, patch_left.cols, patch_left.type(), patch_left.data, patch_left.step);
+    IL.convertTo(IL, CV_32F);
+    IL -= IL.at<float>(win_size, win_size) * cv::Mat::ones(IL.rows, IL.cols, CV_32F);
 
     for (int offset = -slide_width; offset <= +slide_width; ++offset) {
         // 右画像のパッチを抽出する
         auto patch_right = right_image_pyramid_.at(keypt_left.octave)
                                .rowRange(scaled_y_left - win_size, scaled_y_left + win_size + 1)
                                .colRange(scaled_x_right + offset - win_size, scaled_x_right + offset + win_size + 1);
-        patch_right.convertTo(patch_right, CV_32F);
-        patch_right -= patch_right.at<float>(win_size, win_size) * cv::Mat::ones(patch_right.rows, patch_right.cols, CV_32F);
+        cv::Mat IR(patch_left.rows, patch_left.cols, patch_left.type(), patch_left.data, patch_left.step);
+        IR.convertTo(IR, CV_32F);
+        IR -= IR.at<float>(win_size, win_size) * cv::Mat::ones(IR.rows, IR.cols, CV_32F);
 
         // L1相関を求める
         const float correlation = cv::norm(patch_left, patch_right, cv::NORM_L1);

@@ -10,4 +10,4 @@ cmake \
     -DBUILD_TESTS=ON \
     ..
 
-make -j8
+make -j1

@@ -21,6 +21,23 @@ target_sources(${PROJECT_NAME}
                ${CMAKE_CURRENT_SOURCE_DIR}/bow_database.cc
                ${CMAKE_CURRENT_SOURCE_DIR}/frame_statistics.cc)
 
+
+# cuda_include_directories(
+#         ${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc
+# )
+              
+# cuda_add_library(${PROJECT_NAME} SHARED
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/common.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/frame.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/keyframe.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/landmark.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/graph_node.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/camera_database.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/map_database.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/bow_database.cc
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/frame_statistics.cc
+#                 )
+
 # Install headers
 file(GLOB HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(FILES ${HEADERS}

@@ -20,6 +20,21 @@ target_sources(${PROJECT_NAME}
                ${CMAKE_CURRENT_SOURCE_DIR}/loop_detector.cc
                ${CMAKE_CURRENT_SOURCE_DIR}/loop_bundle_adjuster.cc)
 
+# cuda_include_directories(
+# ${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc
+# )
+        
+# cuda_add_library(${PROJECT_NAME} SHARED
+# ${CMAKE_CURRENT_SOURCE_DIR}/initializer.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/relocalizer.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/frame_tracker.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/keyframe_inserter.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/two_view_triangulator.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/local_map_cleaner.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/local_map_updater.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/loop_detector.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/loop_bundle_adjuster.cc)
+
 # Install headers
 file(GLOB HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(FILES ${HEADERS}

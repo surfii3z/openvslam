@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
-project(openvslam LANGUAGES CXX C)
+cmake_minimum_required(VERSION 3.8)
+project(openvslam LANGUAGES CXX C CUDA)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -79,7 +79,7 @@ find_package(Eigen3 3.3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # OpenCV
-find_package(OpenCV 3.3.1 QUIET
+find_package(OpenCV 3.4.0 QUIET
              COMPONENTS
              core imgcodecs videoio features2d calib3d highgui)
 if(NOT OpenCV_FOUND)
@@ -96,6 +96,9 @@ message(STATUS "Use OpenCV ${OpenCV_VERSION}")
 
 include(CMakePackageConfigHelpers)
 include_directories(/home/jedsadakorn/git/SuiteSparse-5.8.1/include/)
+
+
+
 # Generate cmake configuration scripts
 set(OPENVSLAM_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 set(OPENVSLAM_VERSION_CONFIG ${OPENVSLAM_GENERATED_DIR}/${PROJECT_NAME}ConfigVersion.cmake)

@@ -14,6 +14,18 @@ target_sources(${PROJECT_NAME}
                ${CMAKE_CURRENT_SOURCE_DIR}/robust.cc
                ${CMAKE_CURRENT_SOURCE_DIR}/stereo.cc)
 
+# cuda_include_directories(
+# ${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc
+# )
+        
+# cuda_add_library(${PROJECT_NAME} SHARED
+# ${CMAKE_CURRENT_SOURCE_DIR}/area.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/bow_tree.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/fuse.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/projection.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/robust.cc
+# ${CMAKE_CURRENT_SOURCE_DIR}/stereo.cc)
+
 # Install headers
 file(GLOB HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(FILES ${HEADERS}
