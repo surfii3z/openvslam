@@ -38,19 +38,33 @@ endif()
 
 # ----- Create OpenVSLAM library -----
 
-add_library(${PROJECT_NAME}
-            SHARED
+include_directories(
+    ${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc
+)
+
+cuda_add_library(${PROJECT_NAME} SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/config.h
             ${CMAKE_CURRENT_SOURCE_DIR}/type.h
             ${CMAKE_CURRENT_SOURCE_DIR}/system.h
             ${CMAKE_CURRENT_SOURCE_DIR}/tracking_module.h
             ${CMAKE_CURRENT_SOURCE_DIR}/mapping_module.h
             ${CMAKE_CURRENT_SOURCE_DIR}/global_optimization_module.h
+            
             ${CMAKE_CURRENT_SOURCE_DIR}/config.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/system.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/tracking_module.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/mapping_module.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/global_optimization_module.cc
+
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Cuda.cu
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Allocator_gpu.cu
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Orb_gpu.cu
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Fast_gpu.cu
+
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Cuda.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Allocator.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Orb.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/cuda/Fast.hpp
             )
 
 # Set output directory of the library
@@ -158,6 +172,7 @@ target_link_libraries(${PROJECT_NAME}
                       opencv_cudawarping
                       opencv_cudaimgproc
                       opencv_cudafilters
+                      nvToolsExt
                       )
 
 # ----- Install configuration -----

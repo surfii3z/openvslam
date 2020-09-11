@@ -38,7 +38,7 @@ cv::cuda::GpuMat::Allocator * gpu_mat_allocator;
 
 
 namespace {
-  using namespace ORB_SLAM2;
+  using namespace openvslam;
 
   void __attribute__((constructor)) init() {
     // Setup GPU Memory Management

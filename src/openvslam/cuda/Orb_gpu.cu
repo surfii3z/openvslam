@@ -46,7 +46,6 @@
 #include "opencv2/core/cuda/functional.hpp"
 #include <helper_cuda.h>
 #include "openvslam/cuda/Orb.hpp"
-// #include <Utils.hpp>
 
 using namespace cv;
 using namespace cv::cuda;
@@ -115,7 +114,7 @@ namespace openvslam { namespace cuda {
 
   void GpuOrb::launch_async(InputArray _image, const KeyPoint * _keypoints, const int npoints) {
     if (npoints == 0) {
-      POP_RANGE;
+      // POP_RANGE;
       return ;
     }
     const GpuMat image = _image.getGpuMat();

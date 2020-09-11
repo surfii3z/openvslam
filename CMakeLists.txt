@@ -69,6 +69,13 @@ endif()
 
 # ----- Find dependencies -----
 
+# CUDA
+find_package(CUDA QUIET REQUIRED)
+set(CUDA_LIBRARIES PUBLIC ${CUDA_LIBRARIES})
+set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+SET(CUDA_HOST_COMPILER /usr/bin/g++)
+LIST(APPEND CUDA_NVCC_FLAGS "--compiler-options -fno-strict-aliasing -use_fast_math")
+
 # Threads
 find_package(Threads REQUIRED)
 
