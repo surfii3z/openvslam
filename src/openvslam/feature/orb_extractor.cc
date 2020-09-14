@@ -99,21 +99,22 @@ void orb_extractor::extract(const cv::_InputArray& in_image, const cv::_InputArr
     std::vector<std::vector<cv::KeyPoint>> all_keypts;
 
     // select mask to use
-    if (!in_image_mask.empty()) {
-        // Use image_mask if it is available
-        const auto image_mask = in_image_mask.getMat();
-        assert(image_mask.type() == CV_8UC1);
-        compute_fast_keypoints(all_keypts, image_mask);
-    }
-    else if (!rect_mask_.empty()) {
-        // Use rectangle mask if it is available and image_mask is not used
-        assert(rect_mask_.type() == CV_8UC1);
-        compute_fast_keypoints(all_keypts, rect_mask_);
-    }
-    else {
-        // Do not use any mask if all masks are unavailable
-        compute_fast_keypoints(all_keypts, cv::Mat());
-    }
+    // if (!in_image_mask.empty()) {
+    //     // Use image_mask if it is available
+    //     const auto image_mask = in_image_mask.getMat();
+    //     assert(image_mask.type() == CV_8UC1);
+    //     compute_fast_keypoints(all_keypts, image_mask);
+    // }
+    // else if (!rect_mask_.empty()) {
+    //     // Use rectangle mask if it is available and image_mask is not used
+    //     assert(rect_mask_.type() == CV_8UC1);
+    //     compute_fast_keypoints(all_keypts, rect_mask_);
+    // }
+    // else {
+    //     // Do not use any mask if all masks are unavailable
+    //     compute_fast_keypoints(all_keypts, cv::Mat());
+    // }
+    compute_fast_keypoints(all_keypts, cv::Mat());
 
     cv::Mat descriptors;
 
@@ -154,11 +155,13 @@ void orb_extractor::extract(const cv::_InputArray& in_image, const cv::_InputArr
         
         cv::Mat descriptors_at_level = descriptors.rowRange(offset, offset + num_keypts_at_level);
         gpuOrb.join(descriptors_at_level);
+        offset += num_keypts_at_level;
+        // if (level + 1 < orb_params_.num_levels_) {
+        //     auto& keypts_at_level = all_keypts.at(level + 1);
+        //     gpuOrb.launch_async(mvImagePyramid.at(level + 1), keypts.data(), keypts.size());
+        // }
 
         // compute_orb_descriptors(blurred_image, keypts_at_level, descriptors_at_level);
-
-        offset += num_keypts_at_level;
-
         // TODO: This part shall be done by GPU
         correct_keypoint_scale(keypts_at_level, level);
 
@@ -301,7 +304,7 @@ void orb_extractor::compute_image_pyramid(const cv::Mat& image) {
             float scale = scale_factors_.at(level);
             const cv::Size size(std::round(image.cols * 1.0 / scale), std::round(image.rows * 1.0 / scale));
             const cv::Size wholeSize(size.width + orb_patch_radius_*2, size.height + orb_patch_radius_*2);
-            cuda::GpuMat target(wholeSize, image.type(), cuda::gpu_mat_allocator);
+            cv::cuda::GpuMat target(wholeSize, image.type(), cuda::gpu_mat_allocator);
             mvImagePyramidBorder.push_back(target);
             mvImagePyramid.push_back(target(cv::Rect(orb_patch_radius_, orb_patch_radius_, size.width, size.height)));
         }
@@ -311,22 +314,21 @@ void orb_extractor::compute_image_pyramid(const cv::Mat& image) {
         mvImagePyramidAllocatedFlag = true;
     }
 
-    for (unsigned int level = 1; level < orb_params_.num_levels_; ++level) {
+    for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
         // determine the size of an image
         const double scale = scale_factors_.at(level);
         const cv::Size size(std::round(image.cols * 1.0 / scale), std::round(image.rows * 1.0 / scale));
-        cuda::GpuMat target(mvImagePyramidBorder.at(level));
+        cv::cuda::GpuMat target(mvImagePyramidBorder.at(level));
         // resize
         if (level != 0){
             cv::cuda::resize(mvImagePyramid.at(level - 1), mvImagePyramid.at(level), size, 0, 0, cv::INTER_LINEAR, mcvStream);
             cv::cuda::copyMakeBorder(mvImagePyramid.at(level), target, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_,
                             cv::BORDER_REFLECT_101, cv::Scalar(), mcvStream);
         }else{
-            cuda::GpuMat gpuImg(image);
+            cv::cuda::GpuMat gpuImg(image);
             cv::cuda::copyMakeBorder(gpuImg, target, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_,
                             cv::BORDER_REFLECT_101, cv::Scalar(), mcvStream);
         }
-        // cv::resize(mvImagePyramid.at(level - 1), mvImagePyramid.at(level), size, 0, 0, cv::INTER_LINEAR);
     }
     mcvStream.waitForCompletion();
 }
@@ -339,9 +341,6 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
         return mask.at<unsigned char>(y * scale_factor, x * scale_factor) == 0;
     };
 
-    constexpr unsigned int overlap = 6;
-    constexpr unsigned int cell_size = 64;
-
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
@@ -351,14 +350,8 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
 
     for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
         const float scale_factor = scale_factors_.at(level);
-        const unsigned int max_border_x = mvImagePyramid.at(level).cols - orb_patch_radius_;
-        const unsigned int max_border_y = mvImagePyramid.at(level).rows - orb_patch_radius_;
-
-        const unsigned int width = max_border_x - min_border_x;
-        const unsigned int height = max_border_y - min_border_y;
-
-        const unsigned int num_cols = std::ceil(width / cell_size) + 1;
-        const unsigned int num_rows = std::ceil(height / cell_size) + 1;
+        const int max_border_x = mvImagePyramid.at(level).cols - orb_patch_radius_;
+        const int max_border_y = mvImagePyramid.at(level).rows - orb_patch_radius_;
 
         std::vector<cv::KeyPoint> keypts_to_distribute;
         keypts_to_distribute.reserve(orb_params_.max_num_keypts_ * 10);
@@ -371,7 +364,7 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
         if (level + 1 < orb_params_.num_levels_) {
           const int max_border_x = mvImagePyramid.at(level+1).cols - orb_patch_radius_;
           const int max_border_y = mvImagePyramid.at(level+1).rows - orb_patch_radius_;
-          gpuFast.detectAsync(mvImagePyramid.at(level).rowRange(min_border_y, max_border_y).colRange(min_border_x, max_border_x));
+          gpuFast.detectAsync(mvImagePyramid.at(level + 1).rowRange(min_border_y, max_border_y).colRange(min_border_x, max_border_x));
         }
         // compute orientations and Gaussian Blur
         if (level != 0) {
@@ -395,27 +388,12 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
                                                         min_border_x, max_border_x, min_border_y, max_border_y,
                                                         num_keypts_per_level_.at(level));
 
-        // Keypoint size is patch size modified by the scale factor
-        const unsigned int scaled_patch_size = fast_patch_size_ * scale_factors_.at(level);
-
-        for (auto& keypt : keypts_at_level) {
-            // Translation correction (scale will be corrected after ORB description)
-            keypt.pt.x += min_border_x;
-            keypt.pt.y += min_border_y;
-            // Set the other information
-            keypt.octave = level;
-            keypt.size = scaled_patch_size;
-        }
-
         if (level != 0) {
           ic_angle_cuda.join(all_keypts.at(level-1).data(), all_keypts.at(level-1).size());
         }
     } // loop every level
 
     // Compute orientations
-    // for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
-    //     compute_orientation(mvImagePyramid.at(level), all_keypts.at(level));
-    // }
     cv::cuda::GpuMat &gMat = mvImagePyramid.at(orb_params_.num_levels_-1);
     ic_angle_cuda.launch_async(gMat, 
                                 all_keypts.at(orb_params_.num_levels_-1).data(), 

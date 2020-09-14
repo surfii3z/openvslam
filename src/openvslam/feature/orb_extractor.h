@@ -139,12 +139,12 @@ private:
     orb_params orb_params_;
 
     //! BRIEF orientation
-    static constexpr unsigned int fast_patch_size_ = 31;
+    static constexpr int fast_patch_size_ = 31;
     //! half size of FAST patch
     static constexpr int fast_half_patch_size_ = fast_patch_size_ / 2;
 
     //! size of maximum ORB patch radius
-    static constexpr unsigned int orb_patch_radius_ = 19;
+    static constexpr int orb_patch_radius_ = 19;
 
     //! rectangle mask has been already initialized or not
     bool mask_is_initialized_ = false;
