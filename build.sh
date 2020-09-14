@@ -3,7 +3,7 @@ mkdir -p build
 cd build
 
 cmake \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Debug \
     -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.0 \
     -DBUILD_WITH_MARCH_NATIVE=ON \
     -DUSE_PANGOLIN_VIEWER=ON \

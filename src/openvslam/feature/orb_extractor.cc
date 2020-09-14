@@ -32,7 +32,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
-
+#include <iostream>
 #include "openvslam/feature/orb_extractor.h"
 #include "openvslam/feature/orb_point_pairs.h"
 #include "openvslam/util/trigonometric.h"
@@ -119,7 +119,7 @@ void orb_extractor::extract(const cv::_InputArray& in_image, const cv::_InputArr
 
     unsigned int num_keypts = 0;
     for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
-        num_keypts += all_keypts.at(level).size();
+        num_keypts += (int) all_keypts.at(level).size();
     }
     if (num_keypts == 0) {
         out_descriptors.release();
@@ -134,8 +134,9 @@ void orb_extractor::extract(const cv::_InputArray& in_image, const cv::_InputArr
 
     unsigned int offset = 0;
     for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
+        std::cerr << "level: " << level << std::endl;
         auto& keypts_at_level = all_keypts.at(level);
-        const auto num_keypts_at_level = keypts_at_level.size();
+        const auto num_keypts_at_level = (int) keypts_at_level.size();
 
         if (num_keypts_at_level == 0) {
             continue;
@@ -149,15 +150,21 @@ void orb_extractor::extract(const cv::_InputArray& in_image, const cv::_InputArr
         // Compute the descriptors
         // Pipeline the CPU and GPU work
         if (level == 0) {
-          gpuOrb.launch_async(blurred_image, keypts.data(), keypts.size());
+          gpuOrb.launch_async(blurred_image, keypts_at_level.data(), keypts_at_level.size());
         }
         
         cv::Mat descriptors_at_level = descriptors.rowRange(offset, offset + num_keypts_at_level);
+        std::cerr << descriptors_at_level.size() << std::endl;
+
         gpuOrb.join(descriptors_at_level);
 
-        // compute_orb_descriptors(blurred_image, keypts_at_level, descriptors_at_level);
-
         offset += num_keypts_at_level;
+
+        if (level + 1 < orb_params_.num_levels_)
+        {
+            auto& keypts_at_level = all_keypts.at(level + 1);
+            gpuOrb.launch_async(mvImagePyramid.at(level + 1), keypts_at_level.data(), keypts_at_level.size());
+        }
 
         // TODO: This part shall be done by GPU
         correct_keypoint_scale(keypts_at_level, level);
@@ -295,10 +302,11 @@ void orb_extractor::create_rectangle_mask(const unsigned int cols, const unsigne
 
 void orb_extractor::compute_image_pyramid(const cv::Mat& image) {
     // mvImagePyramid.at(0) = image;
+    // std::cerr << mvImagePyramidAllocatedFlag << std::endl;
     if (mvImagePyramidAllocatedFlag == false) {
         // first frame, allocate the Pyramids
         for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
-            float scale = scale_factors_.at(level);
+            const double scale = scale_factors_.at(level);
             const cv::Size size(std::round(image.cols * 1.0 / scale), std::round(image.rows * 1.0 / scale));
             const cv::Size wholeSize(size.width + orb_patch_radius_*2, size.height + orb_patch_radius_*2);
             cuda::GpuMat target(wholeSize, image.type(), cuda::gpu_mat_allocator);
@@ -311,23 +319,26 @@ void orb_extractor::compute_image_pyramid(const cv::Mat& image) {
         mvImagePyramidAllocatedFlag = true;
     }
 
-    for (unsigned int level = 1; level < orb_params_.num_levels_; ++level) {
+    for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
+        // std::cerr << level << std::endl;
         // determine the size of an image
         const double scale = scale_factors_.at(level);
         const cv::Size size(std::round(image.cols * 1.0 / scale), std::round(image.rows * 1.0 / scale));
         cuda::GpuMat target(mvImagePyramidBorder.at(level));
+
         // resize
         if (level != 0){
-            cv::cuda::resize(mvImagePyramid.at(level - 1), mvImagePyramid.at(level), size, 0, 0, cv::INTER_LINEAR, mcvStream);
-            cv::cuda::copyMakeBorder(mvImagePyramid.at(level), target, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_,
+            cuda::resize(mvImagePyramid.at(level - 1), mvImagePyramid.at(level), size, 0, 0, cv::INTER_LINEAR, mcvStream);
+            cuda::copyMakeBorder(mvImagePyramid.at(level), target, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_,
                             cv::BORDER_REFLECT_101, cv::Scalar(), mcvStream);
         }else{
             cuda::GpuMat gpuImg(image);
-            cv::cuda::copyMakeBorder(gpuImg, target, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_,
-                            cv::BORDER_REFLECT_101, cv::Scalar(), mcvStream);
+            cuda::copyMakeBorder(gpuImg, target, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_, orb_patch_radius_,
+                            cv::BORDER_REFLECT_101, cv::Scalar(), mcvStream); 
         }
         // cv::resize(mvImagePyramid.at(level - 1), mvImagePyramid.at(level), size, 0, 0, cv::INTER_LINEAR);
     }
+    
     mcvStream.waitForCompletion();
 }
 
@@ -339,26 +350,26 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
         return mask.at<unsigned char>(y * scale_factor, x * scale_factor) == 0;
     };
 
-    constexpr unsigned int overlap = 6;
-    constexpr unsigned int cell_size = 64;
+    // constexpr unsigned int overlap = 6;
+    // constexpr unsigned int cell_size = 64;
 
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
 
-    constexpr unsigned int min_border_x = orb_patch_radius_;
-    constexpr unsigned int min_border_y = orb_patch_radius_;
+    constexpr unsigned int min_border_x = orb_patch_radius_ - 3;
+    constexpr unsigned int min_border_y = orb_patch_radius_ - 3;
 
     for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
         const float scale_factor = scale_factors_.at(level);
-        const unsigned int max_border_x = mvImagePyramid.at(level).cols - orb_patch_radius_;
-        const unsigned int max_border_y = mvImagePyramid.at(level).rows - orb_patch_radius_;
+        const unsigned int max_border_x = mvImagePyramid.at(level).cols - orb_patch_radius_ + 3;
+        const unsigned int max_border_y = mvImagePyramid.at(level).rows - orb_patch_radius_ + 3;
 
-        const unsigned int width = max_border_x - min_border_x;
-        const unsigned int height = max_border_y - min_border_y;
+        // const unsigned int width = max_border_x - min_border_x;
+        // const unsigned int height = max_border_y - min_border_y;
 
-        const unsigned int num_cols = std::ceil(width / cell_size) + 1;
-        const unsigned int num_rows = std::ceil(height / cell_size) + 1;
+        // const unsigned int num_cols = std::ceil(width / cell_size) + 1;
+        // const unsigned int num_rows = std::ceil(height / cell_size) + 1;
 
         std::vector<cv::KeyPoint> keypts_to_distribute;
         keypts_to_distribute.reserve(orb_params_.max_num_keypts_ * 10);
@@ -369,13 +380,14 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
         }
         gpuFast.joinDetectAsync(keypts_to_distribute);
         if (level + 1 < orb_params_.num_levels_) {
-          const int max_border_x = mvImagePyramid.at(level+1).cols - orb_patch_radius_;
-          const int max_border_y = mvImagePyramid.at(level+1).rows - orb_patch_radius_;
-          gpuFast.detectAsync(mvImagePyramid.at(level).rowRange(min_border_y, max_border_y).colRange(min_border_x, max_border_x));
+          const int max_border_x = mvImagePyramid.at(level+1).cols - orb_patch_radius_ + 3;
+          const int max_border_y = mvImagePyramid.at(level+1).rows - orb_patch_radius_ + 3;
+          gpuFast.detectAsync(mvImagePyramid.at(level+1).rowRange(min_border_y, max_border_y).colRange(min_border_x, max_border_x));
         }
+
         // compute orientations and Gaussian Blur
         if (level != 0) {
-          ic_angle_cuda.launch_async(mvImagePyramid.at(level-1), 
+            ic_angle_cuda.launch_async(mvImagePyramid.at(level-1), 
                                 all_keypts.at(level-1).data(), 
                                 all_keypts.at(level-1).size(), 
                                 fast_half_patch_size_, 
@@ -383,8 +395,8 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
                                 min_border_y, 
                                 level-1, 
                                 fast_patch_size_ * scale_factors_.at(level-1));
-          cv::cuda::GpuMat &gMat = mvImagePyramid.at(level-1);
-          mpGaussianFilter->apply(gMat, gMat, ic_angle_cuda.cvStream());
+            cv::cuda::GpuMat &gMat = mvImagePyramid.at(level-1);
+            mpGaussianFilter->apply(gMat, gMat, ic_angle_cuda.cvStream());
         }
 
         std::vector<cv::KeyPoint>& keypts_at_level = all_keypts.at(level);
@@ -395,27 +407,12 @@ void orb_extractor::compute_fast_keypoints(std::vector<std::vector<cv::KeyPoint>
                                                         min_border_x, max_border_x, min_border_y, max_border_y,
                                                         num_keypts_per_level_.at(level));
 
-        // Keypoint size is patch size modified by the scale factor
-        const unsigned int scaled_patch_size = fast_patch_size_ * scale_factors_.at(level);
-
-        for (auto& keypt : keypts_at_level) {
-            // Translation correction (scale will be corrected after ORB description)
-            keypt.pt.x += min_border_x;
-            keypt.pt.y += min_border_y;
-            // Set the other information
-            keypt.octave = level;
-            keypt.size = scaled_patch_size;
-        }
-
         if (level != 0) {
           ic_angle_cuda.join(all_keypts.at(level-1).data(), all_keypts.at(level-1).size());
         }
     } // loop every level
 
     // Compute orientations
-    // for (unsigned int level = 0; level < orb_params_.num_levels_; ++level) {
-    //     compute_orientation(mvImagePyramid.at(level), all_keypts.at(level));
-    // }
     cv::cuda::GpuMat &gMat = mvImagePyramid.at(orb_params_.num_levels_-1);
     ic_angle_cuda.launch_async(gMat, 
                                 all_keypts.at(orb_params_.num_levels_-1).data(), 

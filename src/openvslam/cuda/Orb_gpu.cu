@@ -40,6 +40,8 @@
 //
 //M*/
 
+#include <iostream>
+
 #include "opencv2/core/cuda/common.hpp"
 #include "opencv2/core/cuda/utility.hpp"
 #include "opencv2/core/cuda/reduce.hpp"
@@ -113,8 +115,8 @@ namespace openvslam { namespace cuda {
   }
 
   void GpuOrb::launch_async(InputArray _image, const KeyPoint * _keypoints, const int npoints) {
+    // std::cerr << "launch_async: " << npoints << std::endl;
     if (npoints == 0) {
-      // POP_RANGE;
       return ;
     }
     const GpuMat image = _image.getGpuMat();
@@ -130,6 +132,8 @@ namespace openvslam { namespace cuda {
   }
 
   void GpuOrb::join(Mat & _descriptors) {
+    // std::cerr << "GpuOrb::join: " << sizeof(_descriptors) << std::endl;
+    // std::cerr << "GpuOrb::join: " << sizeof(desc) << std::endl;
     desc.download(_descriptors, cvStream);
     checkCudaErrors( cudaStreamSynchronize(stream) );
   }
