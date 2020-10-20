@@ -16,7 +16,7 @@ $ ./build.sh
 3) Calibration file for tello, dji_fpv and realsense D435 (Mono + RGBD)
 4) Run RGB-D SLAM without ROS using Realsense D435 camera
 
-```$ ./build/run_rs_camera_slam  -v ros/orb_vocab/orb_vocab.dbow2 -n 0 -c example/realsense/rsD435_rgbd.yaml --debug```
+```$ ./build/run_rs_camera_slam  -v ros/orb_vocab/orb_vocab.dbow2 -c example/realsense/rsD435_rgbd.yaml --debug```
 
 # Code snipped to stream RGB and Depth (aligned) from realsense Camera
 ```
