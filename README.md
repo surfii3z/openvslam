@@ -1,3 +1,15 @@
+# Dependency
+1) librealsense: see [link](https://github.com/IntelRealSense/librealsense) for installation.
+
+# Installation
+1) clone this repro
+``` $ git clone -b D435_plain_dev https://github.com/surfii3z/openvslam.git ```
+2) build this repro
+``` 
+$ cd openvslam
+$ ./build.sh
+```
+
 # Update note
 1) Support for RGBD and Stereo of ROS with this [PR](https://github.com/xdspacelab/openvslam/pull/276)
 2) Pose publisher in slam and localization mode with this [issue](https://github.com/xdspacelab/openvslam/issues/347#issue-638316624)
