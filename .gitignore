@@ -1,3 +1,15 @@
+<<<<<<< Updated upstream
+=======
+.catkin_tools/
+debug.txt
+track_times.txt
+frame_trajectory.txt
+keyframe_trajectory.txt
+logs/
+ros/aist_living_lab_1
+ros/build
+ros/devel
+>>>>>>> Stashed changes
 build/
 devel/
 lib/

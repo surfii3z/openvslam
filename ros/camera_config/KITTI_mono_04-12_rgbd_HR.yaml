@@ -1,0 +1,62 @@
+# KITTI monocular model for seq.04-12
+
+#==============#
+# Camera Model #
+#==============#
+
+Camera.name: "KITTI monocular 04-12"
+Camera.setup: "RGBD"
+Camera.model: "perspective"
+
+Camera.fx: 353.5456
+Camera.fy: 353.5456
+Camera.cx: 300.94365
+Camera.cy: 91.5552
+
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+Camera.k3: 0.0
+
+Camera.fps: 10.0
+Camera.cols: 613
+Camera.rows: 185
+# Camera.focal_x_baseline: 381.829248 
+Camera.focal_x_baseline: 0  # we use left-images
+
+Camera.color_order: "BGR"
+
+#=====================#
+# Tracking Parameters #
+#=====================#
+
+depth_threshold: 40.0
+depthmap_factor: 1
+
+# ref: https://github.com/nianticlabs/monodepth2/issues/76#issuecomment-535032277
+
+#================#
+# ORB Parameters #
+#================#
+
+Feature.max_num_keypoints: 1000
+Feature.scale_factor: 1.2
+Feature.num_levels: 8
+Feature.ini_fast_threshold: 20
+Feature.min_fast_threshold: 7
+
+#===========================#
+# PangolinViewer Parameters #
+#===========================#
+
+PangolinViewer.keyframe_size: 0.06
+PangolinViewer.keyframe_line_width: 1
+PangolinViewer.graph_line_width: 1
+PangolinViewer.point_size: 2
+PangolinViewer.camera_size: 0.07
+PangolinViewer.camera_line_width: 2
+PangolinViewer.viewpoint_x: 0
+PangolinViewer.viewpoint_y: -20
+PangolinViewer.viewpoint_z: -0.1
+PangolinViewer.viewpoint_f: 2800

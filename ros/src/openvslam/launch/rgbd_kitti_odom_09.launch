@@ -1,0 +1,11 @@
+<launch>
+
+    <!-- open openVSLAM node  -->
+    <node name="openvslam_node" pkg="openvslam" type="run_slam" 
+    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/KITTI_mono_04-12_rgbd.yaml --debug"
+    output="screen"/>
+
+    <!-- rename depth topics from realsense  -->
+    <node name="image_publisher_node" pkg="publisher" type="image" args="-i /mnt/ubuntu_storage/dataset/09/image_2 --fps 10"/>
+
+</launch>
