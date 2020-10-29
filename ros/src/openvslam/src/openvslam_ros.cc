@@ -8,9 +8,9 @@
 void pose_odometry_pub(auto cam_pose_, auto pose_pub_){
     // ENU coordinate
     
-    // cam_pose is a homogeneous transformation matrix
-    // det should be 1, otherwise it is not initialized
-    if (cam_pose_.determinant() != 1) return;
+    // // cam_pose is a homogeneous transformation matrix
+    // // det should be 1, otherwise it is not initialized
+    // if (cam_pose_.determinant() != 1) return;
 
     Eigen::Matrix3d rotation_matrix = cam_pose_.block(0, 0, 3, 3);
     Eigen::Vector3d translation_vector = cam_pose_.block(0, 3, 3, 1);
@@ -124,8 +124,6 @@ rgbd::rgbd(const std::shared_ptr<openvslam::config>& cfg, const std::string& voc
 }
 
 void rgbd::callback(const sensor_msgs::ImageConstPtr& color, const sensor_msgs::ImageConstPtr& depth) {
-    std::cerr << "color " << color->header.seq << std::endl;
-    std::cerr << "depth " << depth->header.seq << std::endl;
     auto colorcv = cv_bridge::toCvShare(color)->image;
     auto depthcv = cv_bridge::toCvShare(depth)->image;
     if (colorcv.empty() || depthcv.empty()) {
