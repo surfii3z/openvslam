@@ -124,6 +124,8 @@ rgbd::rgbd(const std::shared_ptr<openvslam::config>& cfg, const std::string& voc
 }
 
 void rgbd::callback(const sensor_msgs::ImageConstPtr& color, const sensor_msgs::ImageConstPtr& depth) {
+    std::cerr << "color " << color->header.seq << std::endl;
+    std::cerr << "depth " << depth->header.seq << std::endl;
     auto colorcv = cv_bridge::toCvShare(color)->image;
     auto depthcv = cv_bridge::toCvShare(depth)->image;
     if (colorcv.empty() || depthcv.empty()) {

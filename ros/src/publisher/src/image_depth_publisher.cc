@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
     popl::OptionParser op("Allowed options");
     auto help = op.add<popl::Switch>("h", "help", "produce help message");
     auto img_dir_path = op.add<popl::Value<std::string>>("i", "img-dir", "directory path which contains images");
+    auto depth_dir_path = op.add<popl::Value<std::string>>("d", "depth-dir", "directory path which contains images");
     auto img_fps = op.add<popl::Value<unsigned int>>("", "fps", "FPS of images", 30);
 
     try {
@@ -44,24 +45,32 @@ int main(int argc, char* argv[]) {
     // initialize this node
     const ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
-    image_transport::Publisher publisher = it.advertise("/video/image_raw", 1);
+    image_transport::Publisher publisher = it.advertise("/camera/color/image_raw", 1);
+    image_transport::Publisher depth_publisher = it.advertise("/camera/depth/image_raw", 1);
 
     sensor_msgs::ImagePtr msg;
+    sensor_msgs::ImagePtr depth_msg;
 
     // load video file
     image_sequence sequence(img_dir_path->value(), img_fps->value());
     const auto frames = sequence.get_frames();
 
+    image_sequence depth_sequence(depth_dir_path->value(), img_fps->value());
+    const auto depth_frames = depth_sequence.get_frames();
+
     ros::Rate pub_rate(img_fps->value());
 
     for (unsigned int i = 0; i < frames.size() && nh.ok(); ++i) {
         const auto& frame = frames.at(i);
+        const auto& depth_frame = depth_frames.at(i);
         std::cout << "next img: " << frame.img_path_ << std::endl;
+        std::cout << "next depth img: " << depth_frame.img_path_ << std::endl;
         const auto img = cv::imread(frame.img_path_, cv::IMREAD_UNCHANGED);
-        std_msgs::Header header;
-        header.seq = i;
-        msg = cv_bridge::CvImage(header, "bgr8", img).toImageMsg();
+        const auto depth_img = cv::imread(depth_frame.img_path_, cv::IMREAD_UNCHANGED);
+        msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+        depth_msg = cv_bridge::CvImage(std_msgs::Header(), "mono16", depth_img).toImageMsg();
         publisher.publish(msg);
+        depth_publisher.publish(depth_msg);
         ros::spinOnce();
         pub_rate.sleep();
     }
