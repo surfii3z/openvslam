@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
         std::cout << "next img: " << frame.img_path_ << std::endl;
         const auto img = cv::imread(frame.img_path_, cv::IMREAD_UNCHANGED);
         msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+        msg->header.seq = i;
         publisher.publish(msg);
         ros::spinOnce();
         pub_rate.sleep();

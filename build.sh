@@ -1,4 +1,5 @@
 echo "Building openVSLAM"
+mkdir -p build
 cd build
 
 cmake \

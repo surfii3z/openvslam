@@ -5,7 +5,5 @@
     args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/KITTI_mono_04-12.yaml --eval-log --debug"
     output="screen"/>
 
-    <node name="image_pub_node" pkg="publisher" type="image" args="-i /mnt/ubuntu_storage/dataset/09/image_2 --fps 7"/>
-
 
 </launch>
