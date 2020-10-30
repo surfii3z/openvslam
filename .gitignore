@@ -12,6 +12,13 @@ cmake-build-release/
 */.python-version
 *.user
 
+.catkin_tools/
+debug.txt
+frame_trajectory.txt
+keyframe_trajectory.txt
+logs/
+track_times.txt
+
 # Prerequisites
 *.d
 
