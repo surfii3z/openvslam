@@ -1,3 +1,9 @@
+# Quick run
+1) change the folder's name of the depth images that you want to use to "image_depth"
+2) change the path accordingly
+``` bash
+./build/run_kitti_slam_rgbd -v ros/orb_vocab/orb_vocab.dbow2 -d /mnt/ubuntu_storage/dataset/kitti_odom_rgb/sequences/09/ -c example/kitti/KITTI_mono_04-12_rgbd.yaml
+```
 # Update note
 1) Support for RGBD and Stereo of ROS with this [PR](https://github.com/xdspacelab/openvslam/pull/276)
 2) Pose publisher in slam and localization mode with this [issue](https://github.com/xdspacelab/openvslam/issues/347#issue-638316624)
