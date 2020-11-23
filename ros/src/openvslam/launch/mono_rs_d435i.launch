@@ -4,7 +4,7 @@
 
     <!-- open openVSLAM node  -->
     <node name="openvslam_node" pkg="openvslam" type="run_slam" 
-    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/rs_D435_mono.yaml"
+    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/rs_D435i_mono.yaml"
     output="screen"/>
 
     <!-- rename image topics from realsense  -->

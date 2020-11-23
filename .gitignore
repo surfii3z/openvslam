@@ -51,3 +51,5 @@ track_times.txt
 *.exe
 *.out
 *.app
+
+*.bag

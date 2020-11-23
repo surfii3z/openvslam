@@ -61,7 +61,7 @@ system::system(const std::shared_ptr<openvslam::config>& cfg, const std::string&
 
 mono::mono(const std::shared_ptr<openvslam::config>& cfg, const std::string& vocab_file_path, const std::string& mask_img_path)
     : system(cfg, vocab_file_path, mask_img_path) {
-    sub_ = it_.subscribe("camera/image_raw", 1, &mono::callback, this);
+    sub_ = it_.subscribe("camera/color/image_raw", 1, &mono::callback, this);
     camera_pose_pub = nh_.advertise<geometry_msgs::PoseStamped>("/openvslam/camera_pose", 1);
 }
 

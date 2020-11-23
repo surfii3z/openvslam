@@ -1,0 +1,15 @@
+<launch>
+    <!-- open realsense RGBD mode -->
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch" />
+
+    <!-- open openVSLAM node  -->
+    <node name="openvslam_localization_node" pkg="openvslam" type="run_localization" 
+    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/rs_D435i_mono.yaml --map-db /home/jy/usrg_exp_room.msg"
+    output="screen"/>
+
+    <!-- rename depth topics from realsense  -->
+    <!-- <node name="image_transport_node" pkg="image_transport" type="republish" 
+    args="raw in:=/camera/aligned_depth_to_color/image_raw raw out:=/camera/depth/image_raw"/> -->
+
+
+</launch>
