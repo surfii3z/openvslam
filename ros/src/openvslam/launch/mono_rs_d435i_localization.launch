@@ -4,7 +4,7 @@
 
     <!-- open openVSLAM node  -->
     <node name="openvslam_localization_node" pkg="openvslam" type="run_localization" 
-    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/rs_D435i_mono.yaml --map-db /home/jy/usrg_exp_room.msg"
+    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/rs_D435i_mono.yaml --map-db /home/jy/AIGC_full.msg"
     output="screen"/>
 
     <!-- rename depth topics from realsense  -->

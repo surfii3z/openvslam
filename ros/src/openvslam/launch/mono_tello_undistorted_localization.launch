@@ -1,8 +1,7 @@
 <launch>
 
-    <!-- open openVSLAM node  -->
-    <node name="openvslam_node" pkg="openvslam" type="run_localization" 
-    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/tello_mono_undistorted.yaml --map-db /home/jy/AIGC.msg"
+    <node name="openvslam_localization_node" pkg="openvslam" type="run_localization" 
+    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/tello_mono_undistorted.yaml --map-db /home/jy/AIGC_full.msg"
     output="screen"/>
 
 

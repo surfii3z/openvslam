@@ -5,13 +5,13 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 
+
 void pose_odometry_pub(auto cam_pose_, auto pose_pub_){
-    // ENU coordinate
+    // NWU
     
     // // cam_pose is a homogeneous transformation matrix
     // // det should be 1, otherwise it is not initialized
-    // if (cam_pose_.determinant() != 1) return;
-
+   
     Eigen::Matrix3d rotation_matrix = cam_pose_.block(0, 0, 3, 3);
     Eigen::Vector3d translation_vector = cam_pose_.block(0, 3, 3, 1);
 
@@ -19,6 +19,11 @@ void pose_odometry_pub(auto cam_pose_, auto pose_pub_){
                                       rotation_matrix(1, 0), rotation_matrix(1, 1), rotation_matrix(1, 2),
                                       rotation_matrix(2, 0), rotation_matrix(2, 1), rotation_matrix(2, 2));
     
+    // valid rotation matrix should have determinant closed to 1
+    // otherwise, it is because it cannot localize itself. giving NaN pose 
+
+    if (abs(tf_rotation_matrix.determinant() - 1) > 0.1) return;
+
     tf2::Vector3 tf_translation_vector(translation_vector(0), translation_vector(1), translation_vector(2));
 
     tf_rotation_matrix = tf_rotation_matrix.inverse();
@@ -35,20 +40,31 @@ void pose_odometry_pub(auto cam_pose_, auto pose_pub_){
 
     transform_tf = transformA * transform_tf * transformB;
 
-    ros::Time now = ros::Time::now();
+    // ros::Time now = ros::Time::now();
 
     // Create pose message and update it with current camera pose
-    geometry_msgs::PoseStamped camera_pose_msg_;
+    geometry_msgs::PoseWithCovarianceStamped camera_pose_msg_;
 
-    camera_pose_msg_.header.stamp = now;
-    camera_pose_msg_.header.frame_id = "map";
-    camera_pose_msg_.pose.position.x = transform_tf.getOrigin().getX();
-    camera_pose_msg_.pose.position.y = transform_tf.getOrigin().getY();
-    camera_pose_msg_.pose.position.z = transform_tf.getOrigin().getZ();
-    camera_pose_msg_.pose.orientation.x = transform_tf.getRotation().getX();
-    camera_pose_msg_.pose.orientation.y = transform_tf.getRotation().getY();
-    camera_pose_msg_.pose.orientation.z = transform_tf.getRotation().getZ();
-    camera_pose_msg_.pose.orientation.w = transform_tf.getRotation().getW();
+    camera_pose_msg_.header.stamp = ros::Time::now();
+    camera_pose_msg_.header.frame_id = "odom";
+    camera_pose_msg_.pose.pose.position.x = transform_tf.getOrigin().getX();
+    camera_pose_msg_.pose.pose.position.y = transform_tf.getOrigin().getY();
+    camera_pose_msg_.pose.pose.position.z = transform_tf.getOrigin().getZ();
+    camera_pose_msg_.pose.pose.orientation.x = transform_tf.getRotation().getX();
+    camera_pose_msg_.pose.pose.orientation.y = transform_tf.getRotation().getY();
+    camera_pose_msg_.pose.pose.orientation.z = transform_tf.getRotation().getZ();
+    camera_pose_msg_.pose.pose.orientation.w = transform_tf.getRotation().getW();
+
+    for (auto & x : camera_pose_msg_.pose.covariance) {
+        x = 0.0;
+    }
+
+    camera_pose_msg_.pose.covariance[0] = 1;
+    camera_pose_msg_.pose.covariance[7] = 1;
+    camera_pose_msg_.pose.covariance[14] = 1;
+    camera_pose_msg_.pose.covariance[21] = 1;
+    camera_pose_msg_.pose.covariance[28] = 1;
+    camera_pose_msg_.pose.covariance[35] = 1;
 
     pose_pub_.publish(camera_pose_msg_);
 
@@ -62,7 +78,7 @@ system::system(const std::shared_ptr<openvslam::config>& cfg, const std::string&
 mono::mono(const std::shared_ptr<openvslam::config>& cfg, const std::string& vocab_file_path, const std::string& mask_img_path)
     : system(cfg, vocab_file_path, mask_img_path) {
     sub_ = it_.subscribe("camera/color/image_raw", 1, &mono::callback, this);
-    camera_pose_pub = nh_.advertise<geometry_msgs::PoseStamped>("/openvslam/camera_pose", 1);
+    camera_pose_pub = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/openvslam/camera_pose", 1);
 }
 
 void mono::callback(const sensor_msgs::ImageConstPtr& msg) {
@@ -87,7 +103,7 @@ stereo::stereo(const std::shared_ptr<openvslam::config>& cfg, const std::string&
       right_sf_(it_, "camera/right/image_raw", 1),
       sync_(SyncPolicy(10), left_sf_, right_sf_) {
     sync_.registerCallback(&stereo::callback, this);
-    camera_pose_pub = nh_.advertise<geometry_msgs::PoseStamped>("/openvslam/camera_pose", 1);
+    camera_pose_pub = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/openvslam/camera_pose", 1);
 }
 
 void stereo::callback(const sensor_msgs::ImageConstPtr& left, const sensor_msgs::ImageConstPtr& right) {
@@ -120,7 +136,7 @@ rgbd::rgbd(const std::shared_ptr<openvslam::config>& cfg, const std::string& voc
       depth_sf_(it_, "camera/depth/image_raw", 1),
       sync_(SyncPolicy(10), color_sf_, depth_sf_) {
     sync_.registerCallback(&rgbd::callback, this);
-    camera_pose_pub = nh_.advertise<geometry_msgs::PoseStamped>("/openvslam/camera_pose", 1);
+    camera_pose_pub = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/openvslam/camera_pose", 1);
 }
 
 void rgbd::callback(const sensor_msgs::ImageConstPtr& color, const sensor_msgs::ImageConstPtr& depth) {

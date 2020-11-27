@@ -1,0 +1,8 @@
+<launch>
+
+    <node name="openvslam_node" pkg="openvslam" type="run_slam" 
+    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/tello_mono_undistorted.yaml"
+    output="screen"/>
+
+
+</launch>

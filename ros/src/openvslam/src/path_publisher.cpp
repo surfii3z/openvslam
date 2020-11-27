@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include <nav_msgs/Path.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 
 
@@ -10,12 +11,15 @@ private:
     ros::Publisher path_pub;
     ros::Subscriber pose_sub;
     nav_msgs::Path path_msg;
+    geometry_msgs::PoseStamped pose_stamped_msg;
 
 public:
-    void poseCallback(const geometry_msgs::PoseStamped msg)
+    void poseCallback(const geometry_msgs::PoseWithCovarianceStamped msg)
     {
-        path_msg.header.frame_id = "map";
-        path_msg.poses.push_back(msg);
+        path_msg.header.frame_id = "odom";
+        pose_stamped_msg.header = msg.header;
+        pose_stamped_msg.pose = msg.pose.pose;
+        path_msg.poses.push_back(pose_stamped_msg);
         path_pub.publish(path_msg);
     }
 

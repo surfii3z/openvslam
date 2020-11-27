@@ -8,10 +8,15 @@ Camera.name: "RS_D435 Mono"
 Camera.setup: "monocular"
 Camera.model: "perspective"
 
-Camera.fx: 613.7305908203125
-Camera.fy: 612.4188842773438
-Camera.cx: 321.9581604003906
-Camera.cy: 237.12478637695312
+# Camera.fx: 613.7305908203125
+# Camera.fy: 612.4188842773438
+# Camera.cx: 321.9581604003906
+# Camera.cy: 237.12478637695312
+
+Camera.fx: 613.0875854492188
+Camera.fy: 613.2054443359375
+Camera.cx: 324.0710144042969
+Camera.cy: 242.4862518310547
 
 Camera.k1: 0.0
 Camera.k2: 0.0
