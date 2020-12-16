@@ -2,7 +2,7 @@
 
     <!-- open openVSLAM node  -->
     <node name="openvslam_node" pkg="openvslam" type="run_slam" 
-    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/KITTI_mono_04-12.yaml --eval-log --debug"
+    args="-v $(find openvslam)../../orb_vocab/orb_vocab.dbow2 -c $(find openvslam)../../camera_config/KITTI_rgbd_04-12.yaml --eval-log --debug"
     output="screen"/>
 
 

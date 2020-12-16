@@ -4,14 +4,14 @@
 # Camera Model #
 #==============#
 
-Camera.name: "KITTI monocular 04-12"
-Camera.setup: "monocular"
+Camera.name: "KITTI monocular 03"
+Camera.setup: "RGBD"
 Camera.model: "perspective"
 
-Camera.fx: 707.0912
-Camera.fy: 707.0912
-Camera.cx: 601.8873
-Camera.cy: 183.1104
+Camera.fx: 721.5377
+Camera.fy: 721.5377
+Camera.cx: 609.5593
+Camera.cy: 172.854
 
 Camera.k1: 0.0
 Camera.k2: 0.0
