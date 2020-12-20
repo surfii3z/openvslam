@@ -117,8 +117,8 @@ void mono_tracking(const std::shared_ptr<openvslam::config>& cfg,
 
     if (eval_log) {
         // output the trajectories for evaluation
-        SLAM.save_frame_trajectory("frame_trajectory.txt", "TUM");
-        SLAM.save_keyframe_trajectory("keyframe_trajectory.txt", "TUM");
+        SLAM.save_frame_trajectory("frame_trajectory.txt", "KITTI");
+        SLAM.save_keyframe_trajectory("keyframe_trajectory.txt", "KITTI");
         // output the tracking times for evaluation
         std::ofstream ofs("track_times.txt", std::ios::out);
         if (ofs.is_open()) {

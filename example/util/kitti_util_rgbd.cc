@@ -32,7 +32,7 @@ kitti_sequence::kitti_sequence(const std::string& seq_dir_path) {
 
     // load image file paths
     const std::string rgb_img_dir_path = seq_dir_path + "/image_2/";
-    const std::string depth_img_dir_path = seq_dir_path + "/image_depth/";
+    const std::string depth_img_dir_path = seq_dir_path + "/image_depth_MR/";
 
     rgb_img_file_paths_.clear();
     depth_img_file_paths_.clear();
